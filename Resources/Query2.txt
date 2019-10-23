@@ -1,0 +1,60 @@
+WITH Subordinates (Id, ParentId) AS (
+	SELECT Id, Id as ParentId
+	FROM Employees
+	UNION ALL
+	SELECT e.Id, s.ParentId
+	FROM Employees e INNER JOIN Subordinates s ON (s.Id = e.ChiefId)
+)
+
+SELECT emain.Name,
+    (
+        SELECT ifnull(SUM(
+            CASE
+                WHEN (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+            END
+        ),0)
+        FROM Subordinates s
+        JOIN Employees e ON e.Id = s.ParentId
+        LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+    ) * 3 AS 'Затраты',
+    (
+        SELECT AVG(
+            CASE
+                WHEN (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+            END
+        )
+        FROM Subordinates s
+        JOIN Employees e ON e.Id = s.ParentId
+        LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+    ) AS 'Avg',
+    (
+        SELECT MAX(
+            CASE
+                WHEN (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+            END
+        )
+        FROM Subordinates s
+        JOIN Employees e ON e.Id = s.ParentId
+        LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+    ) AS 'Max',
+    (
+        SELECT MIN(
+            CASE
+                WHEN (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+            END
+        )
+        FROM Subordinates s
+        JOIN Employees e ON e.Id = s.ParentId
+        LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+    ) AS 'Min'
+FROM Employees emain
+JOIN Employees s ON emain.Id = s.ChiefId
+GROUP BY emain.Name;

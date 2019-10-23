@@ -1,0 +1,213 @@
+WITH Subordinates (Id, ParentId) AS (
+	SELECT Id, Id as ParentId
+	FROM Employees
+	UNION ALL
+	SELECT e.Id, s.ParentId
+	FROM Employees e INNER JOIN Subordinates s ON (s.Id = e.ChiefId)
+)
+
+SELECT emain.Name,
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 1',
+
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-2 month')) + strftime('%j', date('now', '-2 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 2',
+
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-3 month')) + strftime('%j', date('now', '-3 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 3',
+
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-4 month')) + strftime('%j', date('now', '-4 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 4',
+
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-5 month')) + strftime('%j', date('now', '-5 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 5',
+
+        (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END) +
+        (Case
+            WHEN emain.PositionId = 1 
+                THEN 0
+            WHEN emain.PositionId = 2 
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            THEN s.BaseSalary + s.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = s.PositionId)
+                            ELSE s.BaseSalary + s.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', s.EnrollmentDate) + strftime('%j', s.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = s.PositionId)
+                        END),0)
+                    FROM Employees e
+                    LEFT JOIN Employees s ON e.Id = s.ChiefId AND e.Id = emain.Id
+                ) * 0.005
+            WHEN emain.PositionId = 3
+                THEN (
+                    SELECT ifnull(SUM(
+                        CASE
+                            WHEN (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            THEN e1.BaseSalary + e1.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                            ELSE e1.BaseSalary + e1.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-6 month')) + strftime('%j', date('now', '-6 month')) / 365.2422) - (strftime('%Y', e1.EnrollmentDate) + strftime('%j', e1.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = e1.PositionId)
+                        END
+                    ),0) as 'Pay'
+                    FROM Subordinates s
+                    JOIN Employees e ON e.Id = s.ParentId
+                    LEFT JOIN Employees e1 ON e1.Id = s.Id AND s.Id != s.ParentId AND e.Id = emain.Id
+                ) * 0.003
+        END) AS 'Month 6'
+FROM Employees emain;
