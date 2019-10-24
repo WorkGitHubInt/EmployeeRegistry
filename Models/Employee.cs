@@ -43,16 +43,14 @@ namespace EmployeeRegistry.Models
         //Расчет базовой ставки + годовые проценты
         public decimal GetBaseSalary(DateTime requestedDate)
         {
-            var experience = requestedDate.Year - EnrollmentDate.Year;
-            if (EnrollmentDate.Date > requestedDate.Date.AddYears(-experience)) experience--;
             decimal salary;
-            if (experience * Position.YearPercent >= Position.MaxYearPercent)
+            if (requestedDate.YearDifference(EnrollmentDate) * Position.YearPercent >= Position.MaxYearPercent)
             {
                 salary = BaseSalary + BaseSalary * Position.MaxYearPercent;
             }
             else
             {
-                salary = BaseSalary + BaseSalary * experience * Position.YearPercent;
+                salary = BaseSalary + BaseSalary * requestedDate.YearDifference(EnrollmentDate) * Position.YearPercent;
             }
             return salary;
         }
