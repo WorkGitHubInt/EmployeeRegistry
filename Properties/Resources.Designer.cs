@@ -110,69 +110,13 @@ namespace EmployeeRegistry.Properties {
         ///)
         ///
         ///SELECT pmain.PositionName,
-        ///    AVG(emain.BaseSalary + (
-        ///            Case
-        ///                WHEN emain.PositionId = 1 
-        ///                    THEN 0
-        ///                WHEN emain.PositionId = 2 
-        ///                    THEN (
-        ///                        SELECT ifnull(SUM(
-        ///                            CASE
-        ///                     [остаток строки не уместился]&quot;;.
+        ///    AVG(
+        ///	    (CASE 
+        ///		    WHEN (SELECT CAST((strftime(&apos;%Y&apos;, date(&apos;now&apos;, &apos;-1 month&apos;)) + strftime(&apos;%j&apos;, date(&apos;now&apos;, &apos;-1 month&apos;)) / 365.2422) - (strftime(&apos;%Y&apos;, emain.EnrollmentDate) + strftime(&apos;%j&apos;, emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p. [остаток строки не уместился]&quot;;.
         /// </summary>
         internal static string Query3 {
             get {
                 return ResourceManager.GetString("Query3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на WITH Subordinates (Id, ParentId) AS (
-        ///	SELECT Id, Id as ParentId
-        ///	FROM Employees
-        ///	UNION ALL
-        ///	SELECT e.Id, s.ParentId
-        ///	FROM Employees e INNER JOIN Subordinates s ON (s.Id = e.ChiefId)
-        ///)
-        ///
-        ///SELECT SUM(emain.BaseSalary + (
-        ///        Case
-        ///            WHEN emain.PositionId = 1 
-        ///                THEN 0
-        ///            WHEN emain.PositionId = 2 
-        ///                THEN (
-        ///                    SELECT ifnull(SUM(
-        ///                        CASE
-        ///                            WHEN (SELECT CAST((strftime(&apos;%Y&apos;, date(&apos;now&apos;) [остаток строки не уместился]&quot;;.
-        /// </summary>
-        internal static string QueryAllSalary {
-            get {
-                return ResourceManager.GetString("QueryAllSalary", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на WITH Subordinates (Id, ParentId) AS (
-        ///	SELECT Id, Id as ParentId
-        ///	FROM Employees
-        ///	UNION ALL
-        ///	SELECT e.Id, s.ParentId
-        ///	FROM Employees e INNER JOIN Subordinates s ON (s.Id = e.ChiefId)
-        ///)
-        ///
-        ///SELECT emain.BaseSalary + (
-        ///        Case
-        ///            WHEN emain.PositionId = 1 
-        ///                THEN 0
-        ///            WHEN emain.PositionId = 2 
-        ///                THEN (
-        ///                    SELECT ifnull(SUM(
-        ///                        CASE
-        ///                            WHEN (SELECT CAST((strftime(&apos;%Y&apos;, date(&apos;now&apos;)) +  [остаток строки не уместился]&quot;;.
-        /// </summary>
-        internal static string QuerySalary {
-            get {
-                return ResourceManager.GetString("QuerySalary", resourceCulture);
             }
         }
     }

@@ -8,6 +8,7 @@ using System.Linq;
 
 namespace EmployeeRegistry
 {
+    //Здесь нужно добавить блоки try-catch в методы на случай проблем с БД
     public class SQLDatabase
     {
         public static List<Employee> Employees = new List<Employee>();
@@ -140,55 +141,6 @@ namespace EmployeeRegistry
                 command.Parameters.Add(new SQLiteParameter("@Password", employee.Password));
                 command.ExecuteNonQuery();
             }
-        }
-
-        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
-        }
-
-        public static decimal RequestSalary(DateTime requestDate, int employeeId)
-        {
-            decimal salary = default;
-            using (var connection = new SQLiteConnection(LoadConnectionString()))
-            {
-                connection.Open();
-                string query = Properties.Resources.QuerySalary.Replace("date('now')", $"date('{requestDate.ToString("yyyy-MM-dd")}')").Replace("ID_TO_REPLACE", employeeId.ToString());
-                var command = new SQLiteCommand(query, connection);
-                SQLiteDataReader reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        salary = reader.GetDecimal(0);
-                    }
-                }
-                reader.Close();
-            }
-            return salary;
-        }
-
-        public static decimal RequestAllSalary()
-        {
-            decimal salary = default;
-            using (var connection = new SQLiteConnection(LoadConnectionString()))
-            {
-                connection.Open();
-                string query = Properties.Resources.QueryAllSalary;
-                var command = new SQLiteCommand(query, connection);
-                SQLiteDataReader reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        salary = reader.GetDecimal(0);
-                    }
-                }
-                reader.Close();
-            }
-            return salary;
         }
 
         private static string LoadConnectionString(string id = "SqlDBConnection")

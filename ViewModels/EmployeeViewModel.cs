@@ -29,7 +29,7 @@ namespace EmployeeRegistry.ViewModels
         {
             if (SelectedSub != null)
             {
-                MessageBox.Show($"Зарплата сотрудника {SelectedSub.Name}: {SQLDatabase.RequestSalary(SelectedDate, SelectedSub.Id)}");
+                MessageBox.Show($"Зарплата сотрудника {SelectedSub.Name}: {SelectedSub.GetSalary(SelectedDate)} руб.");
             } else
             {
                 MessageBox.Show("Не выбран подчиненный!", "", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -38,7 +38,7 @@ namespace EmployeeRegistry.ViewModels
 
         private void RequestSelfSalary()
         {
-            MessageBox.Show($"Ваша зарплата: {SQLDatabase.RequestSalary(SelectedDate, Employee.Id)}");
+            MessageBox.Show($"Ваша зарплата: {Employee.GetSalary(SelectedDate)} руб.");
         }
     }
 }

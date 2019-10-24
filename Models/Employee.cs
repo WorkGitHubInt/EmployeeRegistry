@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace EmployeeRegistry.Models
 {
+    //Тут желательно перевести все базовые св-ва на { get; private set; } и через конструктор производить проверки вносимых значений
     public class Employee
     {
         public int Id { get; set; }
@@ -27,10 +28,10 @@ namespace EmployeeRegistry.Models
                 switch (Position.Id)
                 {
                     case 2:
-                        salary += GetBaseSalary(requestedDate);
+                        salary += sub.GetBaseSalary(requestedDate) * 0.005M;
                         break;
                     case 3:
-                        salary += GetSalary(requestedDate);
+                        salary += sub.GetSalary(requestedDate) * 0.003M;
                         break;
                     default:
                         break;
@@ -47,7 +48,7 @@ namespace EmployeeRegistry.Models
             decimal salary;
             if (experience * Position.YearPercent >= Position.MaxYearPercent)
             {
-                salary = BaseSalary + BaseSalary * experience * Position.MaxYearPercent;
+                salary = BaseSalary + BaseSalary * Position.MaxYearPercent;
             }
             else
             {

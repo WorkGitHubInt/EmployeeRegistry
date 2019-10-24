@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -40,7 +41,7 @@ namespace EmployeeRegistry.ViewModels
         {
             if (SelectedEmployee != null)
             {
-                MessageBox.Show($"Зарплата сотрудника {SelectedEmployee.Name}: {SQLDatabase.RequestSalary(SelectedDate, SelectedEmployee.Id)} руб.", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Зарплата сотрудника {SelectedEmployee.Name}: {SelectedEmployee.GetSalary(SelectedDate)} руб.", "", MessageBoxButton.OK, MessageBoxImage.Information);
             } else
             {
                 MessageBox.Show("Не выбран сотрудник!", "", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -59,7 +60,7 @@ namespace EmployeeRegistry.ViewModels
 
         private void DisplaySalary()
         {
-            MessageBox.Show($"Зарплата всех сотрудников: {SQLDatabase.RequestAllSalary()} руб.", "", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Зарплата всех сотрудников: {Employees.Sum(e => e.GetSalary(SelectedDate))} руб.", "", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Query1()

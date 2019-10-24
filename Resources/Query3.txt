@@ -7,7 +7,13 @@ WITH Subordinates (Id, ParentId) AS (
 )
 
 SELECT pmain.PositionName,
-    AVG(emain.BaseSalary + (
+    AVG(
+	    (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now')) + strftime('%j', date('now')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END)
+	+ (
             Case
                 WHEN emain.PositionId = 1 
                     THEN 0
