@@ -82,8 +82,21 @@ ORDER BY e.Name;
 ```
 Ну и наконец слепил это всё в один запрос. В данном случае это выбор всех сотрудников и их зарплат на текущую дату:
 ```sql
+WITH Subordinates (Id, ParentId) AS (
+	SELECT Id, Id as ParentId
+	FROM Employees
+	UNION ALL
+	SELECT e.Id, s.ParentId
+	FROM Employees e INNER JOIN Subordinates s ON (s.Id = e.ChiefId)
+)
+
 SELECT emain.Name,
-    emain.BaseSalary + (
+            (CASE 
+		    WHEN (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId) >= (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+            THEN emain.BaseSalary + emain.BaseSalary * (SELECT p.MaxYearPercent FROM Position p WHERE p.Id = emain.PositionId)
+		    ELSE emain.BaseSalary + emain.BaseSalary * (SELECT CAST((strftime('%Y', date('now', '-1 month')) + strftime('%j', date('now', '-1 month')) / 365.2422) - (strftime('%Y', emain.EnrollmentDate) + strftime('%j', emain.EnrollmentDate) / 365.2422) AS INT)) * (SELECT p.YearPercent FROM Position p WHERE p.Id = emain.PositionId)
+	    END)
+    + (
         Case
             WHEN emain.PositionId = 1 
                 THEN 0
